@@ -61,7 +61,7 @@ class UserModel {
   async updateUser(u: User): Promise<User> {
     try {
       const connection = await pool.connect();
-      const sql = usersQueries.updateUser;
+      const sql = `UPDATE users SET email=$1, user_name=$2, first_name=$3, last_name=$4, password=$5 WHERE id=$6 RETURNING id, email, user_name, first_name, last_name`;
       const result = await connection.query(sql, [
         u.email,
         u.user_name,
@@ -93,5 +93,33 @@ class UserModel {
     }
   }
   //authinticate user
+  async authenticateUser(
+    email: string,
+    password: string
+  ): Promise<User | null> {
+    try {
+      const connection = await pool.connect();
+      const sql = `SELECT password FROM users WHERE email=$1`;
+      const result = await connection.query(sql, [email]);
+      if (result.rows.length) {
+        const { password: hashPassword } = result.rows[0];
+        const isPasswordValid = bcrypt.compareSync(
+          `${password}${config.pepper}`,
+          hashPassword
+        );
+        if (isPasswordValid) {
+          const userInfo = await connection.query(
+            `SELECT id, email, user_name, first_name, last_name FROM users WHERE email=($1)`,
+            [email]
+          );
+          return userInfo.rows[0];
+        }
+      }
+      connection.release();
+      return null;
+    } catch (error) {
+      throw new Error(`Unable to login: ${(error as Error).message}`);
+    }
+  }
 }
 export default UserModel;

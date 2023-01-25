@@ -12,6 +12,7 @@ const {
   PG_PORT,
   BCRYPT_PASSWORD,
   SALT_ROUNDS,
+  TOKEN_SECRET,
 } = process.env;
 
 export default {
@@ -23,4 +24,5 @@ export default {
   database: NODE_ENV === "dev" ? PG_DATABASE : PG_DATABASE_TEST,
   pepper: BCRYPT_PASSWORD,
   salt: SALT_ROUNDS,
+  tokenSecret: TOKEN_SECRET,
 };
