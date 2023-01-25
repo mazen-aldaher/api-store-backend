@@ -7,7 +7,7 @@ const pool = new Pool({
   host: config.host,
   database: config.database,
   port: parseInt(config.dbPort as string, 10),
-  max: 4,
+  max: 100,
 });
 
 pool.on("error", (error: Error) => {
