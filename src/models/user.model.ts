@@ -1,9 +1,14 @@
 // @ts-ignore
-import { Connection } from "pg";
 import pool from "../database/index";
 import usersQueries from "../queries/users.queries";
 import User from "../types/user.type";
+import config from "../config/config";
+import bcrypt from "bcrypt";
 
+const hashPassword = (password: string | any) => {
+  const salt = parseInt(config.salt as string, 10);
+  return bcrypt.hashSync(`${password}${config.pepper}`, salt);
+};
 class UserModel {
   // create user
   async createUser(u: User): Promise<User> {
@@ -16,7 +21,7 @@ class UserModel {
         u.user_name,
         u.first_name,
         u.last_name,
-        u.password,
+        hashPassword(u.password),
       ]);
       // release connection
       connection.release();
@@ -62,6 +67,7 @@ class UserModel {
         u.user_name,
         u.first_name,
         u.last_name,
+        hashPassword(u.password),
         u.id,
       ]);
       connection.release();
@@ -86,5 +92,6 @@ class UserModel {
       );
     }
   }
+  //authinticate user
 }
 export default UserModel;
